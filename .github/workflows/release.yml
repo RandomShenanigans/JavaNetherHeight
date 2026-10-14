@@ -134,6 +134,8 @@ jobs:
         with:
           tag_name: ${{ inputs.version }}
           name: ${{ inputs.version }}
-          files: artifacts/**/*
+          files: |
+            artifacts/**/*.so
+            artifacts/**/*.dll
           fail_on_unmatched_files: true
           overwrite_files: true
