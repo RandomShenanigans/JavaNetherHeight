@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(BuildLimitChanger LANGUAGES C)
+project(JavaNetherHeight LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -9,32 +9,30 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include(CheckIPOSupported)
 include(cmake/CPM.cmake)
 
-set(BUILD_LIMIT_CHANGER_SOURCES
+set(JAVA_NETHER_HEIGHT_SOURCES
     src/main.c
     src/dimension_hook.c
-    src/utils.c
-    src/config/config_manager.c
     src/binary_parser/section_parser.c
     src/binary_parser/searcher.c
     src/decoder/x64_decoder.c
 )
 
-add_library(BuildLimitChanger SHARED ${BUILD_LIMIT_CHANGER_SOURCES})
-target_include_directories(BuildLimitChanger PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set_target_properties(BuildLimitChanger PROPERTIES
-    OUTPUT_NAME BuildLimitChanger
+add_library(JavaNetherHeight SHARED ${JAVA_NETHER_HEIGHT_SOURCES})
+target_include_directories(JavaNetherHeight PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set_target_properties(JavaNetherHeight PROPERTIES
+    OUTPUT_NAME JavaNetherHeight
     C_VISIBILITY_PRESET hidden
 )
 
 if(MSVC)
-    set_property(TARGET BuildLimitChanger PROPERTY
+    set_property(TARGET JavaNetherHeight PROPERTY
         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
     )
-    target_compile_options(BuildLimitChanger PRIVATE $<$<CONFIG:Release>:/O2 /Gy /Gw>)
-    target_link_options(BuildLimitChanger PRIVATE $<$<CONFIG:Release>:/OPT:REF /OPT:ICF>)
+    target_compile_options(JavaNetherHeight PRIVATE $<$<CONFIG:Release>:/O2 /Gy /Gw>)
+    target_link_options(JavaNetherHeight PRIVATE $<$<CONFIG:Release>:/OPT:REF /OPT:ICF>)
 
     CPMAddPackage("gh:TsudaKageyu/minhook@1.3.4")
-    target_link_libraries(BuildLimitChanger PRIVATE minhook psapi)
+    target_link_libraries(JavaNetherHeight PRIVATE minhook psapi)
 else()
     if(ANDROID)
         set(_BASE_FLAGS -Oz -fomit-frame-pointer -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-stack-protector -fno-ident)
@@ -44,11 +42,11 @@ else()
         set(_LINK_FLAGS -Wl,--gc-sections -Wl,--exclude-libs,ALL -Wl,--build-id=none -Wl,--hash-style=gnu -s)
     endif()
 
-    target_compile_options(BuildLimitChanger PRIVATE
+    target_compile_options(JavaNetherHeight PRIVATE
         $<$<CONFIG:Release>:${_BASE_FLAGS}>
         $<$<CONFIG:Release>:-ffunction-sections;-fdata-sections>
     )
-    target_link_options(BuildLimitChanger PRIVATE $<$<CONFIG:Release>:${_LINK_FLAGS}>)
+    target_link_options(JavaNetherHeight PRIVATE $<$<CONFIG:Release>:${_LINK_FLAGS}>)
 
     CPMAddPackage(
         NAME gamepwnage
@@ -66,10 +64,10 @@ else()
     )
     target_include_directories(gamepwnage PUBLIC ${gamepwnage_SOURCE_DIR}/src)
     target_compile_options(gamepwnage PRIVATE $<$<CONFIG:Release>:-ffunction-sections;-fdata-sections;${_BASE_FLAGS}>)
-    target_link_libraries(BuildLimitChanger PRIVATE gamepwnage)
+    target_link_libraries(JavaNetherHeight PRIVATE gamepwnage)
 
     if(ANDROID)
-        target_link_options(BuildLimitChanger PRIVATE
+        target_link_options(JavaNetherHeight PRIVATE
             $<$<CONFIG:Release>:-Wl,--version-script=${PROJECT_SOURCE_DIR}/map.txt;-Wl,--no-undefined-version>
         )
     endif()
@@ -77,7 +75,7 @@ endif()
 
 check_ipo_supported(RESULT _IPO_OK OUTPUT _IPO_ERR)
 if(_IPO_OK)
-    set_property(TARGET BuildLimitChanger PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+    set_property(TARGET JavaNetherHeight PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
     if(TARGET gamepwnage)
         set_property(TARGET gamepwnage PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
     endif()

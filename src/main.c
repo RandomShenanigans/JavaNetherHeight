@@ -1,7 +1,5 @@
 #include "binary_parser/section_parser.h"
-#include "config/config_manager.h"
 #include "dimension_hook.h"
-#include "utils.h"
 
 #include <string.h>
 
@@ -17,13 +15,11 @@ static void init(void)
 {
     SectionList sections = { 0 };
     int text_index = -1;
-    int hook_version;
+    int hook_version = -1;
     void *string_pos = NULL;
 
     if (!get_sections_runtime(&sections) || sections.count == 0)
         return;
-
-    hook_version = config_manager_get_hook_version_override();
 
     for (size_t i = 0; i < sections.count; ++i) {
         SectionInfo *section = &sections.items[i];
@@ -61,22 +57,13 @@ static void init(void)
 
 MOD_API void mod_init(void)
 {
-#if defined(__ANDROID__)
-    config_manager_init("/data/data/com.mojang.minecraftpe");
-#elif defined(__linux__)
-    config_manager_init(get_executable_dir());
-#endif
     init();
 }
 
 #if defined(__ANDROID__)
 __attribute__((constructor)) static void start(void)
 {
-    char path[1024];
-    if (get_config_location(path, sizeof(path))) {
-        config_manager_init(path);
-        init();
-    }
+    init();
 }
 #elif defined(_WIN32)
 #define NOMINMAX
@@ -85,7 +72,6 @@ __attribute__((constructor)) static void start(void)
 static DWORD WINAPI start(LPVOID unused)
 {
     (void)unused;
-    config_manager_init(get_state_directory());
     init();
     return 0;
 }
