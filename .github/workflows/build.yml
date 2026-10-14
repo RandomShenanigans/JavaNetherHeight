@@ -51,7 +51,9 @@ jobs:
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get install -y ninja-build
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
 
       - name: Install Ninja (Windows)
         if: runner.os == 'Windows'
@@ -64,6 +66,9 @@ jobs:
       - name: Set up Android SDK
         if: startsWith(matrix.preset, 'android-')
         uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            platform-tools
 
       - name: Install specific NDK version
         if: startsWith(matrix.preset, 'android-')
