@@ -95,7 +95,12 @@ jobs:
         shell: bash
         run: |
           shopt -s nullglob
-          for f in ${{ matrix.artifactGlob }}; do
+          files=( ${{ matrix.artifactGlob }} )
+          if (( ${#files[@]} == 0 )); then
+            echo "No matching binaries found: ${{ matrix.artifactGlob }}"
+            exit 1
+          fi
+          for f in "${files[@]}"; do
             dir=$(dirname "$f")
             base=$(basename "$f")
             name="${base%.*}"
@@ -107,7 +112,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.preset }}
-          path: ${{ matrix.binaryDir }}/*
+          path: ${{ matrix.artifactGlob }}
           if-no-files-found: error
 
   release:
@@ -131,3 +136,4 @@ jobs:
           name: ${{ inputs.version }}
           files: artifacts/**/*
           fail_on_unmatched_files: true
+          overwrite_files: true
