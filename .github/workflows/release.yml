@@ -58,7 +58,9 @@ jobs:
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get install -y ninja-build
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
 
       - name: Install Ninja (Windows)
         if: runner.os == 'Windows'
@@ -71,6 +73,9 @@ jobs:
       - name: Set up Android SDK
         if: startsWith(matrix.preset, 'android-')
         uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            platform-tools
 
       - name: Install specific NDK version
         if: startsWith(matrix.preset, 'android-')
@@ -89,6 +94,7 @@ jobs:
       - name: Rename artifacts
         shell: bash
         run: |
+          shopt -s nullglob
           for f in ${{ matrix.artifactGlob }}; do
             dir=$(dirname "$f")
             base=$(basename "$f")
@@ -101,7 +107,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.preset }}
-          path: ${{ matrix.artifactGlob }}
+          path: ${{ matrix.binaryDir }}/*
           if-no-files-found: error
 
   release:
@@ -121,7 +127,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.version }}
-          name: ${{ github.event.inputs.version }}
+          tag_name: ${{ inputs.version }}
+          name: ${{ inputs.version }}
           files: artifacts/**/*
           fail_on_unmatched_files: true
